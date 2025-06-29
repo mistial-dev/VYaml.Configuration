@@ -1,0 +1,12 @@
+<Project>
+  <Target Name="RemoveTopLevelBinObjDirs" AfterTargets="Clean">
+    <RemoveDir
+      Directories="$(MSBuildThisFileDirectory)bin"
+      Condition="Exists('$(MSBuildThisFileDirectory)bin')"
+    />
+    <RemoveDir
+      Directories="$(MSBuildThisFileDirectory)obj"
+      Condition="Exists('$(MSBuildThisFileDirectory)obj')"
+    />
+  </Target>
+</Project>

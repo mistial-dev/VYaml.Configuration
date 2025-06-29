@@ -1,0 +1,151 @@
+# Advanced YAML Types and Features
+# This file demonstrates advanced YAML features supported by VYaml.Configuration
+
+# Anchors and Aliases (for reusing configuration)
+defaults: &defaults
+  timeout: 30
+  retries: 3
+  backoff: exponential
+
+development:
+  <<: *defaults
+  endpoint: http://localhost:5000
+  debug: true
+
+production:
+  <<: *defaults
+  endpoint: https://api.production.com
+  timeout: 60  # Override default
+  debug: false
+
+# Multi-line strings with different styles
+LiteralBlock: |
+  This is a literal block scalar.
+  Line breaks are preserved.
+  Indentation is maintained.
+    This line is indented.
+  
+  Empty lines are also preserved.
+
+FoldedBlock: >
+  This is a folded block scalar.
+  Line breaks become spaces.
+  Empty lines create paragraph breaks.
+  
+  This is a new paragraph.
+  It continues on this line.
+
+# Quoted strings with special characters
+SpecialChars:
+  WithNewline: "First line\nSecond line"
+  WithTab: "Column1\tColumn2\tColumn3"
+  WithQuotes: "She said \"Hello\" to him"
+  WithBackslash: "C:\\Users\\Admin\\Documents"
+  Unicode: "Hello 世界 🌍"
+
+# Numbers in different formats
+Numbers:
+  Integer: 42
+  Negative: -17
+  Hex: 0xFF
+  Octal: 0o755
+  Float: 3.14159
+  Scientific: 6.022e23
+  Infinity: .inf
+  NegInfinity: -.inf
+  NotANumber: .nan
+
+# Booleans in different formats
+Booleans:
+  TrueValues: [true, True, TRUE, yes, Yes, YES, on, On, ON]
+  FalseValues: [false, False, FALSE, no, No, NO, off, Off, OFF]
+  
+# Null values
+NullValues:
+  ExplicitNull: null
+  TildeNull: ~
+  ImplicitNull:
+  
+# Dates and timestamps
+Dates:
+  ISODate: 2025-01-29
+  ISODateTime: 2025-01-29T10:30:00
+  ISODateTimeWithTimezone: 2025-01-29T10:30:00-05:00
+  UnixTimestamp: 1738158600
+
+# Complex nested structure with mixed types
+Application:
+  Name: "Advanced YAML Demo"
+  Version: 2.1
+  Build:
+    Number: 1234
+    Date: 2025-01-29
+    GitCommit: "b5de58f"
+  
+  Features: &features
+    - Name: "Feature A"
+      Enabled: true
+      Config:
+        Level: 5
+        Options: ["opt1", "opt2"]
+    - Name: "Feature B"
+      Enabled: false
+      Config:
+        Level: 0
+        Options: []
+  
+  Environments:
+    Dev:
+      Features: *features
+      Overrides:
+        "Feature A":
+          Config:
+            Level: 10
+    
+    Prod:
+      Features: *features
+      Overrides:
+        "Feature B":
+          Enabled: true
+          Config:
+            Level: 3
+
+# Binary data (base64 encoded)
+BinaryData: !!binary |
+  R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=
+
+# Explicit type tags
+ExplicitTypes:
+  StringNumber: !!str 123
+  NumberString: !!float "456.789"
+  ForcedString: !!str true
+
+# Set (unique values only)
+UniqueRoles: !!set
+  ? Admin
+  ? User
+  ? Moderator
+  ? Admin  # Duplicate, will be ignored
+
+# Ordered map (preserves insertion order)
+OrderedSettings: !!omap
+  - First: 1
+  - Second: 2
+  - Third: 3
+
+# Merge key examples
+BaseConfig: &base
+  logLevel: info
+  timeout: 30
+  retries: 3
+
+ServiceA:
+  <<: *base
+  port: 8080
+  name: "Service A"
+
+ServiceB:
+  <<: *base
+  port: 8081
+  name: "Service B"
+  logLevel: debug  # Override base

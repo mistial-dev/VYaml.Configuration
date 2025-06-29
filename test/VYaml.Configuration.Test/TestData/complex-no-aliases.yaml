@@ -1,0 +1,81 @@
+# Complex YAML configuration for testing
+application:
+  name: "Complex Test Application"
+  version: "3.1.4"
+  description: |
+    This is a multi-line description
+    that spans multiple lines
+    and tests literal block scalars
+
+environment:
+  name: "production"
+  debug: false
+  logLevel: "warning"
+
+services:
+  database:
+    provider: "postgresql"
+    connection:
+      host: "db.example.com"
+      port: 5432
+      username: "dbuser"
+      database: "myapp"
+      pooling:
+        min: 5
+        max: 20
+        idleTimeout: 300
+    options:
+      ssl: true
+      charset: "utf8mb4"
+      timezone: "UTC"
+  
+  cache:
+    provider: "redis"
+    instances:
+      - host: "redis1.example.com"
+        port: 6379
+        db: 0
+      - host: "redis2.example.com"
+        port: 6379
+        db: 0
+    ttl: 3600
+    
+  messaging:
+    provider: "rabbitmq"
+    connection:
+      host: "mq.example.com"
+      port: 5672
+      vhost: "/production"
+    queues:
+      - name: "orders"
+        durable: true
+        exclusive: false
+        autoDelete: false
+      - name: "notifications"
+        durable: false
+        exclusive: false
+        autoDelete: true
+
+features:
+  enableNewUI: true
+  enableBetaFeatures: false
+  enableMetrics: true
+  experimentalFlags:
+    - "FEATURE_A"
+    - "FEATURE_B"
+    - "FEATURE_C"
+
+limits:
+  maxRequestSize: 10485760  # 10MB
+  maxConcurrentRequests: 1000
+  requestTimeout: 30
+  rateLimits:
+    default:
+      requests: 100
+      window: 60
+    api:
+      requests: 1000
+      window: 3600
+
+# Special characters in values
+specialChars: "String with special chars: !@#$%^&*()[]{}|\\:;\"'<>?,./"

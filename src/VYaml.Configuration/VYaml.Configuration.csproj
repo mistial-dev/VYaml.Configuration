@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>netstandard2.0;$(DefaultFrameworkTargets)</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- NuGet Package Properties -->
+    <PackageId>VYaml.Configuration</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Title>YAML Configuration Provider for .NET</Title>
+    <Authors>Mistial Developer</Authors>
+    <Company>Mistial Developer</Company>
+    <Product>VYaml.Configuration</Product>
+    <Description>A high-performance YAML configuration provider for .NET that serves as a drop-in replacement for JSON configuration, with near-full YAML 1.2 support and seamless integration with Microsoft.Extensions.Configuration.</Description>
+    <Summary>YAML configuration provider for .NET with Microsoft.Extensions.Configuration integration</Summary>
+    <PackageTags>yaml;configuration;dotnet;core;netstandard;microsoft;extensions;vyaml;config</PackageTags>
+    <PackageProjectUrl>https://github.com/mistial-dev/VYaml.Configuration</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mistial-dev/VYaml.Configuration</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>Initial release of VYaml.Configuration with near-full YAML 1.2 support and Microsoft.Extensions.Configuration integration.</PackageReleaseNotes>
+    <Copyright>Copyright (c) 2025 Mistial Developer. All rights reserved.</Copyright>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.6" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="VYaml" Version="1.2.0" />
+    <PackageReference Include="System.IO.Abstractions" Version="21.0.29" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="PolySharp" Version="1.15.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Buffers" Version="4.6.0" />
+    <PackageReference Include="System.Memory" Version="4.6.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\docs\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,222 @@
+// <copyright file="YamlConfigurationFileParser.cs" company="Mistial Developer">
+// Copyright (c) 2025 Mistial Developer. All rights reserved.
+// Licensed under the MIT License. See docs/LICENSE for details.
+// </copyright>
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+
+using Microsoft.Extensions.Configuration;
+using VYaml.Parser;
+
+namespace VYaml.Configuration
+{
+    /// <summary>
+    /// Provides parsing of YAML files into configuration key-value pairs.
+    /// </summary>
+    internal sealed class YamlConfigurationFileParser
+    {
+        private readonly Dictionary<string, string?> data = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        private readonly Stack<string> paths = new Stack<string>();
+
+        private YamlConfigurationFileParser()
+        {
+        }
+
+        /// <summary>
+        /// Parses a YAML stream into configuration key-value pairs.
+        /// </summary>
+        /// <param name="input">The stream containing YAML content.</param>
+        /// <returns>A dictionary of configuration key-value pairs.</returns>
+        public static IDictionary<string, string?> Parse(Stream input)
+            => new YamlConfigurationFileParser().ParseStream(input);
+
+        private Dictionary<string, string?> ParseStream(Stream input)
+        {
+            try
+            {
+                using var streamReader = new StreamReader(input, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true);
+                var yaml = streamReader.ReadToEnd();
+
+                // Check for tab characters
+                if (yaml.Contains('\t'))
+                {
+                    var lines = yaml.Split('\n');
+                    for (int i = 0; i < lines.Length; i++)
+                    {
+                        if (lines[i].Contains('\t'))
+                        {
+                            throw new FormatException($"YAML configuration error: Tab characters are not allowed. Use spaces for indentation. Found tab at line {i + 1}");
+                        }
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(yaml))
+                {
+                    return this.data;
+                }
+
+                var utf8Bytes = Encoding.UTF8.GetBytes(yaml);
+                var parser = VYaml.Parser.YamlParser.FromBytes(utf8Bytes);
+
+                // Skip to the document content
+                parser.SkipAfter(ParseEventType.StreamStart);
+
+                while (parser.Read())
+                {
+                    if (parser.CurrentEventType == ParseEventType.DocumentStart)
+                    {
+                        continue;
+                    }
+
+                    if (parser.CurrentEventType == ParseEventType.DocumentEnd ||
+                        parser.CurrentEventType == ParseEventType.StreamEnd)
+                    {
+                        break;
+                    }
+
+                    this.VisitValue(ref parser);
+                    break;
+                }
+            }
+            catch (YamlParserException ex)
+            {
+                throw new FormatException($"YAML parsing error: {ex.Message}", ex);
+            }
+            catch (FormatException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException($"Failed to parse YAML configuration: {ex.Message}", ex);
+            }
+
+            return this.data;
+        }
+
+        private void VisitValue(ref VYaml.Parser.YamlParser parser)
+        {
+            switch (parser.CurrentEventType)
+            {
+            case ParseEventType.Scalar:
+                this.VisitScalar(ref parser);
+                break;
+
+            case ParseEventType.SequenceStart:
+                this.VisitSequence(ref parser);
+                break;
+
+            case ParseEventType.MappingStart:
+                this.VisitMapping(ref parser);
+                break;
+
+            case ParseEventType.Alias:
+                throw new FormatException($"YAML aliases are not supported in configuration files at line {parser.CurrentMark.Line}");
+
+            case ParseEventType.DocumentEnd:
+            case ParseEventType.StreamEnd:
+                break;
+
+            default:
+                throw new FormatException($"Unexpected YAML token '{parser.CurrentEventType}' at line {parser.CurrentMark.Line}");
+            }
+        }
+
+        private void VisitScalar(ref VYaml.Parser.YamlParser parser)
+        {
+            if (this.paths.Count > 0)
+            {
+                var key = this.paths.Peek();
+                var value = parser.GetScalarAsString();
+
+                // Handle null values properly
+                if (value == "null" || value == "Null" || value == "NULL" || value == "~")
+                {
+                    this.data[key] = null;
+                }
+                else
+                {
+                    this.data[key] = value;
+                }
+            }
+        }
+
+        private void VisitSequence(ref VYaml.Parser.YamlParser parser)
+        {
+            int index = 0;
+
+            while (parser.Read() && parser.CurrentEventType != ParseEventType.SequenceEnd)
+            {
+                this.EnterContext(index.ToString());
+                this.VisitValue(ref parser);
+                this.ExitContext();
+                index++;
+            }
+
+            this.SetEmptyIfElementIsEmpty(isEmpty: index == 0);
+        }
+
+        private void VisitMapping(ref VYaml.Parser.YamlParser parser)
+        {
+            var isEmpty = true;
+
+            while (parser.Read() && parser.CurrentEventType != ParseEventType.MappingEnd)
+            {
+                isEmpty = false;
+
+                // Read the key
+                if (parser.CurrentEventType != ParseEventType.Scalar)
+                {
+                    throw new FormatException($"Expected scalar key in YAML mapping at line {parser.CurrentMark.Line}");
+                }
+
+                var key = parser.GetScalarAsString();
+
+                if (string.IsNullOrEmpty(key))
+                {
+                    throw new FormatException($"YAML mapping key cannot be empty at line {parser.CurrentMark.Line}");
+                }
+
+                this.EnterContext(key!);
+
+                // Read the value
+                if (!parser.Read())
+                {
+                    throw new FormatException($"Unexpected end of YAML stream after key '{key}'");
+                }
+
+                this.VisitValue(ref parser);
+                this.ExitContext();
+            }
+
+            this.SetNullIfElementIsEmpty(isEmpty);
+        }
+
+        private void EnterContext(string context) =>
+            this.paths.Push(this.paths.Count > 0 ?
+                this.paths.Peek() + ConfigurationPath.KeyDelimiter + context :
+                context);
+
+        private void ExitContext() => this.paths.Pop();
+
+        private void SetNullIfElementIsEmpty(bool isEmpty)
+        {
+            if (isEmpty && this.paths.Count > 0)
+            {
+                this.data[this.paths.Peek()] = null;
+            }
+        }
+
+        private void SetEmptyIfElementIsEmpty(bool isEmpty)
+        {
+            if (isEmpty && this.paths.Count > 0)
+            {
+                this.data[this.paths.Peek()] = string.Empty;
+            }
+        }
+    }
+}

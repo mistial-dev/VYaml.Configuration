@@ -1,0 +1,287 @@
+// ASP.NET Core Integration Example
+// This file demonstrates how to integrate VYaml.Configuration with ASP.NET Core applications
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using VYaml.Configuration;
+
+namespace VYaml.Configuration.Sample.Examples;
+
+/// <summary>
+/// Example showing how to use VYaml.Configuration in an ASP.NET Core application.
+/// </summary>
+public class AspNetCoreIntegrationExample
+{
+    /// <summary>
+    /// Example 1: Basic ASP.NET Core setup with YAML configuration.
+    /// </summary>
+    public static void BasicWebApplicationExample(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Add YAML configuration files to the configuration pipeline
+        builder.Configuration
+            .AddYamlFile("appsettings.yaml", optional: false, reloadOnChange: true)
+            .AddYamlFile($"appsettings.{builder.Environment.EnvironmentName}.yaml", optional: true, reloadOnChange: true);
+
+        // Configure services
+        builder.Services.AddControllers();
+        
+        // Bind configuration sections to strongly-typed options
+        builder.Services.Configure<DatabaseOptions>(
+            builder.Configuration.GetSection("Database"));
+        
+        builder.Services.Configure<ApiOptions>(
+            builder.Configuration.GetSection("Api"));
+
+        var app = builder.Build();
+
+        // Configure the HTTP request pipeline
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+
+        app.UseRouting();
+        app.MapControllers();
+
+        app.Run();
+    }
+
+    /// <summary>
+    /// Example 2: Advanced configuration with multiple YAML sources and validation.
+    /// </summary>
+    public static void AdvancedConfigurationExample(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Clear existing configuration sources if needed
+        builder.Configuration.Sources.Clear();
+
+        // Build a custom configuration with multiple YAML sources
+        builder.Configuration
+            // Base configuration
+            .AddYamlFile("config/base.yaml", optional: false, reloadOnChange: true)
+            // Feature-specific configuration
+            .AddYamlFile("config/features.yaml", optional: true, reloadOnChange: true)
+            // Environment-specific configuration
+            .AddYamlFile($"config/{builder.Environment.EnvironmentName}.yaml", optional: true, reloadOnChange: true)
+            // User secrets (development only)
+            .AddUserSecrets<Program>(optional: true)
+            // Environment variables (highest priority)
+            .AddEnvironmentVariables();
+
+        // Add services with validation
+        builder.Services.AddOptions<AppSettings>()
+            .Bind(builder.Configuration)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        // Register configuration change monitoring
+        builder.Services.AddSingleton<IHostedService, ConfigurationChangeMonitor>();
+
+        var app = builder.Build();
+        app.Run();
+    }
+
+    /// <summary>
+    /// Example 3: Using YAML configuration with minimal APIs.
+    /// </summary>
+    public static void MinimalApiExample(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Add YAML configuration
+        builder.Configuration.AddYamlFile("api-config.yaml", optional: false, reloadOnChange: true);
+
+        // Configure services
+        builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("Api"));
+
+        var app = builder.Build();
+
+        // Define endpoints that use configuration
+        app.MapGet("/config", (IConfiguration config) =>
+        {
+            var apiSettings = config.GetSection("Api").Get<ApiSettings>();
+            return Results.Ok(new
+            {
+                BaseUrl = apiSettings?.BaseUrl,
+                Version = apiSettings?.Version,
+                Features = apiSettings?.Features
+            });
+        });
+
+        app.MapGet("/health", (IConfiguration config) =>
+        {
+            var healthCheck = config.GetSection("HealthCheck").Get<HealthCheckSettings>();
+            return Results.Ok(new
+            {
+                Status = "Healthy",
+                Endpoint = healthCheck?.Endpoint,
+                Interval = healthCheck?.IntervalSeconds
+            });
+        });
+
+        app.Run();
+    }
+
+    /// <summary>
+    /// Example 4: Configuration with dependency injection and IOptions pattern.
+    /// </summary>
+    public class ConfigurationWithDIExample
+    {
+        public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+        {
+            // Configure options using the Options pattern
+            services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
+            services.Configure<CacheOptions>(configuration.GetSection("Cache"));
+            services.Configure<EmailOptions>(configuration.GetSection("Email"));
+
+            // Register options with validation
+            services.AddOptions<SecurityOptions>()
+                .Bind(configuration.GetSection("Security"))
+                .ValidateDataAnnotations()
+                .Validate(options =>
+                {
+                    // Custom validation logic
+                    if (string.IsNullOrEmpty(options.JwtSecret))
+                        return false;
+                    if (options.TokenExpirationMinutes < 1)
+                        return false;
+                    return true;
+                }, "Invalid security configuration");
+
+            // Register services that depend on configuration
+            services.AddSingleton<IDatabaseService, DatabaseService>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddSingleton<ICacheService, CacheService>();
+        }
+    }
+
+    /// <summary>
+    /// Example 5: Hot reload configuration changes.
+    /// </summary>
+    public class ConfigurationChangeMonitor : BackgroundService
+    {
+        private readonly IOptionsMonitor<AppSettings> _optionsMonitor;
+        private readonly ILogger<ConfigurationChangeMonitor> _logger;
+
+        public ConfigurationChangeMonitor(
+            IOptionsMonitor<AppSettings> optionsMonitor,
+            ILogger<ConfigurationChangeMonitor> logger)
+        {
+            _optionsMonitor = optionsMonitor;
+            _logger = logger;
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            // Listen for configuration changes
+            _optionsMonitor.OnChange((settings, name) =>
+            {
+                _logger.LogInformation($"Configuration changed: {name}");
+                _logger.LogInformation($"New application name: {settings.ApplicationName}");
+                
+                // React to configuration changes
+                // For example, update service behavior, refresh caches, etc.
+            });
+
+            // Keep the service running
+            await Task.Delay(Timeout.Infinite, stoppingToken);
+        }
+    }
+}
+
+// Sample option classes used in the examples above
+
+public class DatabaseOptions
+{
+    public string ConnectionString { get; set; } = string.Empty;
+    public int MaxConnections { get; set; } = 100;
+    public int CommandTimeout { get; set; } = 30;
+}
+
+public class ApiOptions
+{
+    public string BaseUrl { get; set; } = string.Empty;
+    public string Version { get; set; } = "v1";
+    public List<string> Features { get; set; } = new();
+}
+
+public class AppSettings
+{
+    public string ApplicationName { get; set; } = string.Empty;
+    public DatabaseOptions Database { get; set; } = new();
+    public ApiOptions Api { get; set; } = new();
+}
+
+public class ApiSettings
+{
+    public string BaseUrl { get; set; } = string.Empty;
+    public string Version { get; set; } = string.Empty;
+    public List<string> Features { get; set; } = new();
+}
+
+public class HealthCheckSettings
+{
+    public string Endpoint { get; set; } = "/health";
+    public int IntervalSeconds { get; set; } = 30;
+}
+
+public class CacheOptions
+{
+    public string Provider { get; set; } = "InMemory";
+    public int ExpirationMinutes { get; set; } = 60;
+}
+
+public class EmailOptions
+{
+    public string Provider { get; set; } = string.Empty;
+    public string FromAddress { get; set; } = string.Empty;
+    public Dictionary<string, string> Templates { get; set; } = new();
+}
+
+public class SecurityOptions
+{
+    public string JwtSecret { get; set; } = string.Empty;
+    public int TokenExpirationMinutes { get; set; } = 60;
+    public List<string> AllowedOrigins { get; set; } = new();
+}
+
+// Sample service interfaces
+public interface IDatabaseService { }
+public interface IEmailService { }
+public interface ICacheService { }
+
+// Sample service implementations
+public class DatabaseService : IDatabaseService
+{
+    private readonly DatabaseOptions _options;
+    
+    public DatabaseService(IOptions<DatabaseOptions> options)
+    {
+        _options = options.Value;
+    }
+}
+
+public class EmailService : IEmailService
+{
+    private readonly EmailOptions _options;
+    
+    public EmailService(IOptions<EmailOptions> options)
+    {
+        _options = options.Value;
+    }
+}
+
+public class CacheService : ICacheService
+{
+    private readonly CacheOptions _options;
+    
+    public CacheService(IOptions<CacheOptions> options)
+    {
+        _options = options.Value;
+    }
+}

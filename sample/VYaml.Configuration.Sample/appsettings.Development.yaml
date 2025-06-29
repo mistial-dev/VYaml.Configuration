@@ -1,0 +1,220 @@
+# Development-specific YAML Configuration
+# This file overrides settings for the Development environment
+# It demonstrates environment-specific configuration overrides
+
+Sample:
+  # Override application name for development
+  ApplicationName: "VYaml Configuration Sample [DEV]"
+  
+  # Override database connection for development
+  Database:
+    ConnectionString: "Server=(localdb)\\MSSQLLocalDB;Database=SampleDb_Dev;Trusted_Connection=true"
+    MaxConnections: 10  # Lower for development
+    CommandTimeoutSeconds: 300  # Higher timeout for debugging
+  
+  # Override API settings for development
+  Api:
+    BaseUrl: "https://localhost:5001/api"  # Local development API
+    ApiKey: "dev-api-key-12345-not-secret"  # Non-production key
+    TimeoutMs: 30000  # Higher timeout for debugging
+  
+  # Enable all features in development
+  Features:
+    EnableLogging: true
+    EnableMetrics: true
+    EnableDebugMode: true
+    
+  # Additional development-only features
+  DevelopmentFeatures:
+    EnableSwagger: true
+    EnableDeveloperExceptionPage: true
+    EnableHotReload: true
+    EnableDetailedErrors: true
+    MockExternalServices: true
+
+# More verbose logging in development
+Logging:
+  LogLevel:
+    Default: Debug
+    VYaml.Configuration: Trace
+    Microsoft: Information
+    Microsoft.Hosting.Lifetime: Information
+    Microsoft.EntityFrameworkCore: Debug  # Show EF Core queries
+    System: Information
+  
+  # Console logging configuration
+  Console:
+    IncludeScopes: true
+    TimestampFormat: "yyyy-MM-dd HH:mm:ss "
+    UseUtcTimestamp: false
+    ColorBehavior: Enabled
+    SingleLine: false
+    
+  # Development file logging
+  File:
+    Enabled: true
+    Path: "logs/dev-{Date}.log"
+    RollingInterval: Day
+    RetainedFileCountLimit: 7
+    OutputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Category} - {Message:lj}{NewLine}{Exception}"
+
+# Development-specific connection strings
+ConnectionStrings:
+  DefaultConnection: "Server=(localdb)\\MSSQLLocalDB;Database=MyApp_Dev;Trusted_Connection=true;MultipleActiveResultSets=true"
+  RedisCache: "localhost:6379,abortConnect=false,connectTimeout=5000,syncTimeout=5000"
+  RabbitMQ: "amqp://guest:guest@localhost:5672/vhost_dev"
+  ElasticSearch: "http://localhost:9200"
+
+# Development-specific services
+Services:
+  # Email service - use console/file output in development
+  EmailService:
+    Provider: "Console"  # Use console output in development
+    Settings:
+      FromEmail: "dev-noreply@localhost"
+      SaveToFile: true
+      FilePath: "emails/"
+      Templates:
+        Welcome: "dev-welcome-template"
+        PasswordReset: "dev-reset-template"
+  
+  # Storage - use local file system in development
+  Storage:
+    Provider: "FileSystem"  # Use local file system in development
+    Settings:
+      RootPath: "./dev-uploads"
+      MaxFileSize: 52428800  # 50MB limit for development
+      CreateDirectoryIfNotExists: true
+      
+  # Cache - use in-memory cache for development
+  Cache:
+    Provider: "InMemory"
+    Settings:
+      SizeLimit: 1000
+      CompactionPercentage: 0.25
+      ExpirationScanFrequency: "00:05:00"
+      
+  # Message Queue - use in-memory queue for development
+  MessageQueue:
+    Provider: "InMemory"
+    Settings:
+      MaxQueueSize: 1000
+      ProcessingDelay: 100  # milliseconds
+
+# Development tools configuration
+DevelopmentTools:
+  # Swagger/OpenAPI settings
+  Swagger:
+    Enabled: true
+    Title: "VYaml Sample API (Development)"
+    Version: "v1-dev"
+    Description: "Development environment API documentation"
+    IncludeXmlComments: true
+    ShowSchemas: true
+    
+  # Health checks
+  HealthChecks:
+    Enabled: true
+    Endpoint: "/health"
+    DetailedOutput: true
+    Checks:
+      - Name: "Database"
+        Critical: true
+        Timeout: 5
+      - Name: "Redis"
+        Critical: false
+        Timeout: 2
+      - Name: "Storage"
+        Critical: false
+        Timeout: 3
+        
+  # Developer dashboard
+  Dashboard:
+    Enabled: true
+    Endpoint: "/dev-dashboard"
+    ShowConfiguration: true
+    ShowEnvironment: true
+    ShowAssemblies: true
+
+# Security settings for development
+Security:
+  # Relaxed CORS for development
+  Cors:
+    AllowedOrigins: ["http://localhost:3000", "http://localhost:3001", "http://localhost:4200"]
+    AllowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"]
+    AllowedHeaders: ["*"]
+    AllowCredentials: true
+    PreflightMaxAge: 3600
+    
+  # Development JWT settings
+  Jwt:
+    ValidateIssuer: false
+    ValidateAudience: false
+    ValidateLifetime: true
+    ClockSkew: "00:05:00"
+    
+  # HTTPS redirection disabled for development
+  Https:
+    RequireHttps: false
+    HstsEnabled: false
+
+# Performance settings for development
+Performance:
+  # Request/Response logging
+  RequestLogging:
+    Enabled: true
+    IncludeHeaders: true
+    IncludeQueryString: true
+    IncludeRequestBody: true
+    IncludeResponseBody: true
+    MaxBodyLength: 10000
+    
+  # Caching disabled for development
+  ResponseCaching:
+    Enabled: false
+    
+  # Compression disabled for easier debugging
+  Compression:
+    Enabled: false
+
+# Test data and seeds for development
+TestData:
+  SeedDatabase: true
+  NumberOfTestUsers: 10
+  NumberOfTestOrders: 50
+  GenerateSampleData: true
+  
+  TestAccounts:
+    - Email: "admin@localhost"
+      Password: "Admin123!"
+      Roles: ["Admin", "User"]
+    - Email: "user@localhost"  
+      Password: "User123!"
+      Roles: ["User"]
+    - Email: "test@localhost"
+      Password: "Test123!"
+      Roles: ["User", "Tester"]
+
+# Feature flags specific to development
+FeatureFlags:
+  ShowDebugInfo: true
+  EnableProfiling: true
+  EnableMiniProfiler: true
+  EnableDiagnosticPages: true
+  BypassAuthentication: false  # Set to true for easier testing
+  UseMockPaymentGateway: true
+  UseInMemoryBus: true
+
+# Development-specific endpoints
+Endpoints:
+  BaseUrl: "https://localhost:5001"
+  ApiPrefix: "/api/v1"
+  StaticFilesPath: "/static"
+  UploadPath: "/uploads"
+  
+  # Additional development endpoints
+  DevEndpoints:
+    ConfigDump: "/dev/config"
+    EnvironmentInfo: "/dev/env"
+    RoutesInfo: "/dev/routes"
+    ServicesInfo: "/dev/services"

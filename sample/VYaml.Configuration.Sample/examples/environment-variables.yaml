@@ -1,0 +1,198 @@
+# Environment Variables Example
+# This file demonstrates patterns for environment variable substitution
+# Note: VYaml.Configuration doesn't natively support ${VAR} syntax,
+# but this shows common patterns that can be implemented
+
+# Basic environment variable references
+Database:
+  # These would need custom processing to substitute
+  Host: "${DB_HOST}"
+  Port: "${DB_PORT}"
+  Username: "${DB_USER}"
+  Password: "${DB_PASSWORD}"
+  
+  # With default values
+  Database: "${DB_NAME:-myapp}"
+  Schema: "${DB_SCHEMA:-public}"
+  
+  # Connection string with multiple variables
+  ConnectionString: "Server=${DB_HOST:-localhost};Port=${DB_PORT:-5432};Database=${DB_NAME:-myapp};User Id=${DB_USER:-postgres};Password=${DB_PASSWORD}"
+
+# API Configuration with environment-specific values
+Api:
+  BaseUrl: "${API_BASE_URL:-https://api.example.com}"
+  Key: "${API_KEY}"
+  Secret: "${API_SECRET}"
+  
+  # Conditional configuration based on environment
+  Environment: "${ASPNETCORE_ENVIRONMENT:-Development}"
+  
+  # Timeouts with defaults
+  ConnectTimeout: "${API_CONNECT_TIMEOUT:-30}"
+  ReadTimeout: "${API_READ_TIMEOUT:-60}"
+
+# Feature flags controlled by environment
+Features:
+  NewUI: "${FEATURE_NEW_UI:-false}"
+  BetaFeatures: "${FEATURE_BETA:-false}"
+  MaintenanceMode: "${MAINTENANCE_MODE:-false}"
+  
+  # Complex feature configuration
+  RateLimiting:
+    Enabled: "${RATE_LIMIT_ENABLED:-true}"
+    RequestsPerMinute: "${RATE_LIMIT_RPM:-60}"
+    BurstSize: "${RATE_LIMIT_BURST:-10}"
+
+# Cloud service configuration
+AWS:
+  Region: "${AWS_REGION:-us-east-1}"
+  AccessKeyId: "${AWS_ACCESS_KEY_ID}"
+  SecretAccessKey: "${AWS_SECRET_ACCESS_KEY}"
+  
+  S3:
+    BucketName: "${S3_BUCKET:-my-app-bucket}"
+    Region: "${S3_REGION:-${AWS_REGION}}"  # Nested variable reference
+    
+  DynamoDB:
+    TablePrefix: "${DYNAMODB_TABLE_PREFIX:-${ASPNETCORE_ENVIRONMENT}-}"
+    ReadCapacity: "${DYNAMODB_READ_CAPACITY:-5}"
+    WriteCapacity: "${DYNAMODB_WRITE_CAPACITY:-5}"
+
+# Logging configuration
+Logging:
+  Level: "${LOG_LEVEL:-Information}"
+  
+  # Different sinks based on environment
+  Sinks:
+    Console:
+      Enabled: "${LOG_CONSOLE:-true}"
+      Format: "${LOG_FORMAT:-json}"
+    
+    File:
+      Enabled: "${LOG_FILE_ENABLED:-false}"
+      Path: "${LOG_FILE_PATH:-/var/log/app.log}"
+      RollingInterval: "${LOG_ROLLING:-Day}"
+    
+    Elasticsearch:
+      Enabled: "${LOG_ELASTIC_ENABLED:-false}"
+      Uri: "${ELASTIC_URI:-http://localhost:9200}"
+      IndexFormat: "${LOG_INDEX_FORMAT:-logs-{0:yyyy.MM.dd}}"
+
+# Security settings
+Security:
+  Jwt:
+    Issuer: "${JWT_ISSUER:-https://localhost:5001}"
+    Audience: "${JWT_AUDIENCE:-api}"
+    SecretKey: "${JWT_SECRET_KEY}"
+    ExpirationMinutes: "${JWT_EXPIRATION:-60}"
+    
+  Cors:
+    AllowedOrigins: "${CORS_ORIGINS:-https://localhost:3000,https://localhost:3001}"
+    AllowCredentials: "${CORS_CREDENTIALS:-true}"
+  
+  Encryption:
+    Algorithm: "${ENCRYPTION_ALGO:-AES256}"
+    Key: "${ENCRYPTION_KEY}"
+    Salt: "${ENCRYPTION_SALT}"
+
+# External service endpoints
+Services:
+  PaymentGateway:
+    Url: "${PAYMENT_GATEWAY_URL}"
+    MerchantId: "${PAYMENT_MERCHANT_ID}"
+    ApiKey: "${PAYMENT_API_KEY}"
+    TestMode: "${PAYMENT_TEST_MODE:-true}"
+  
+  EmailService:
+    Provider: "${EMAIL_PROVIDER:-SendGrid}"
+    ApiKey: "${EMAIL_API_KEY}"
+    FromAddress: "${EMAIL_FROM:-noreply@example.com}"
+    FromName: "${EMAIL_FROM_NAME:-My Application}"
+  
+  Cache:
+    Provider: "${CACHE_PROVIDER:-Redis}"
+    ConnectionString: "${CACHE_CONNECTION:-localhost:6379}"
+    DefaultExpiration: "${CACHE_EXPIRATION:-3600}"
+
+# Build and deployment information
+BuildInfo:
+  Version: "${BUILD_VERSION:-1.0.0-local}"
+  Commit: "${GIT_COMMIT:-unknown}"
+  Branch: "${GIT_BRANCH:-unknown}"
+  BuildDate: "${BUILD_DATE:-unknown}"
+  BuildNumber: "${BUILD_NUMBER:-0}"
+
+# Performance tuning
+Performance:
+  ThreadPool:
+    MinWorkerThreads: "${MIN_WORKER_THREADS:-50}"
+    MinIOThreads: "${MIN_IO_THREADS:-50}"
+    MaxWorkerThreads: "${MAX_WORKER_THREADS:-500}"
+    MaxIOThreads: "${MAX_IO_THREADS:-500}"
+  
+  HttpClient:
+    MaxConnectionsPerServer: "${HTTP_MAX_CONNECTIONS:-10}"
+    Timeout: "${HTTP_TIMEOUT:-100}"
+    PooledConnectionLifetime: "${HTTP_CONNECTION_LIFETIME:-300}"
+
+# Monitoring and telemetry
+Telemetry:
+  ApplicationInsights:
+    Enabled: "${APPINSIGHTS_ENABLED:-false}"
+    ConnectionString: "${APPINSIGHTS_CONNECTION_STRING}"
+    
+  OpenTelemetry:
+    Enabled: "${OTEL_ENABLED:-false}"
+    Endpoint: "${OTEL_ENDPOINT:-http://localhost:4317}"
+    ServiceName: "${OTEL_SERVICE_NAME:-my-service}"
+    
+  Metrics:
+    Enabled: "${METRICS_ENABLED:-true}"
+    Interval: "${METRICS_INTERVAL:-60}"
+    Endpoint: "${METRICS_ENDPOINT:-/metrics}"
+
+# Path configurations
+Paths:
+  TempDirectory: "${TEMP_PATH:-/tmp}"
+  UploadDirectory: "${UPLOAD_PATH:-/var/uploads}"
+  LogDirectory: "${LOG_PATH:-/var/log}"
+  DataDirectory: "${DATA_PATH:-/var/data}"
+
+# Complex nested example with multiple env vars
+ComplexConfig:
+  Database:
+    Primary:
+      Host: "${PRIMARY_DB_HOST:-${DB_HOST:-localhost}}"
+      Port: "${PRIMARY_DB_PORT:-${DB_PORT:-5432}}"
+    
+    Replica:
+      Host: "${REPLICA_DB_HOST:-${PRIMARY_DB_HOST}}"
+      Port: "${REPLICA_DB_PORT:-${PRIMARY_DB_PORT}}"
+    
+    Options:
+      PoolSize: "${DB_POOL_SIZE:-20}"
+      Timeout: "${DB_TIMEOUT:-30}"
+      RetryCount: "${DB_RETRY_COUNT:-3}"
+
+# List from environment variable (comma-separated)
+AllowedHosts: "${ALLOWED_HOSTS:-localhost,127.0.0.1,::1}"
+
+# Boolean from environment
+Settings:
+  Debug: "${DEBUG:-false}"
+  Verbose: "${VERBOSE:-false}"
+  Production: "${IS_PRODUCTION:-false}"
+
+# Numeric values from environment
+Limits:
+  MaxFileSize: "${MAX_FILE_SIZE:-10485760}"  # 10MB default
+  MaxRequests: "${MAX_REQUESTS:-1000}"
+  RateLimit: "${RATE_LIMIT:-60}"
+
+# Note for implementation:
+# To support environment variable substitution, you would need to:
+# 1. Parse the YAML first
+# 2. Walk through all string values
+# 3. Replace ${VAR_NAME:-default} patterns with actual environment variable values
+# 4. Handle nested variable references
+# 5. Consider using a library like DotEnv for .env file support

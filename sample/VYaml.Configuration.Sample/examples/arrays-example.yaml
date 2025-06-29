@@ -1,0 +1,83 @@
+# Arrays and Collections Example
+# This file demonstrates various ways to define arrays and collections in YAML
+
+# Simple string array
+Fruits:
+  - Apple
+  - Banana
+  - Orange
+  - Mango
+
+# Array of objects
+Users:
+  - Id: 1
+    Name: John Doe
+    Email: john@example.com
+    Roles:
+      - Admin
+      - User
+  - Id: 2
+    Name: Jane Smith
+    Email: jane@example.com
+    Roles:
+      - User
+      - Moderator
+  - Id: 3
+    Name: Bob Johnson
+    Email: bob@example.com
+    Roles:
+      - User
+
+# Nested arrays
+Matrix:
+  - [1, 2, 3]
+  - [4, 5, 6]
+  - [7, 8, 9]
+
+# Mixed type array (numbers and strings)
+MixedArray:
+  - 42
+  - "Hello"
+  - 3.14
+  - true
+  - "2025-01-15"
+
+# Array with complex nested objects
+Servers:
+  - Name: web-01
+    Region: us-east-1
+    Configuration:
+      CPU: 4
+      Memory: 16GB
+      Storage:
+        - Type: SSD
+          Size: 100GB
+          Mount: /
+        - Type: HDD
+          Size: 500GB
+          Mount: /data
+    Tags:
+      Environment: Production
+      Team: Platform
+      
+  - Name: db-01
+    Region: us-west-2
+    Configuration:
+      CPU: 8
+      Memory: 32GB
+      Storage:
+        - Type: SSD
+          Size: 500GB
+          Mount: /var/lib/postgresql
+    Tags:
+      Environment: Production
+      Team: Database
+
+# Flow style arrays (inline)
+CompactNumbers: [1, 2, 3, 4, 5]
+CompactStrings: ["red", "green", "blue"]
+
+# Empty arrays
+EmptyArray: []
+EmptyArrayAlt: 
+  -

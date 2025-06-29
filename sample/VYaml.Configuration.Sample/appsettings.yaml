@@ -1,0 +1,86 @@
+# Sample YAML Configuration for VYaml.Configuration Demo
+# This file demonstrates the capabilities of VYaml.Configuration
+
+Sample:
+  ApplicationName: "VYaml Configuration Sample"
+  Version: "1.0.0"
+  
+  # Database configuration
+  Database:
+    ConnectionString: "Server=localhost;Database=SampleDb;Trusted_Connection=true"
+    MaxConnections: 50
+    CommandTimeoutSeconds: 30
+  
+  # API configuration
+  Api:
+    BaseUrl: "https://api.example.com"
+    ApiKey: "sample-api-key-12345"
+    TimeoutMs: 5000
+  
+  # Feature flags
+  Features:
+    EnableLogging: true
+    EnableMetrics: false
+    EnableDebugMode: true
+  
+  # Array of supported environments
+  SupportedEnvironments:
+    - Development
+    - Staging
+    - Production
+
+# Logging configuration (standard ASP.NET Core format)
+Logging:
+  LogLevel:
+    Default: Information
+    Microsoft: Warning
+    System: Warning
+  Console:
+    IncludeScopes: false
+    LogToStandardErrorThreshold: Error
+
+# Connection strings (demonstrates nested configuration)
+ConnectionStrings:
+  DefaultConnection: "Server=localhost;Database=MyApp;Trusted_Connection=true"
+  RedisCache: "localhost:6379"
+  
+# Complex nested structure
+Services:
+  EmailService:
+    Provider: "SendGrid"
+    Settings:
+      ApiKey: "${EMAIL_API_KEY}"  # Environment variable placeholder
+      FromEmail: "noreply@example.com"
+      Templates:
+        Welcome: "d-123456789"
+        PasswordReset: "d-987654321"
+  
+  Storage:
+    Provider: "AzureBlob"
+    Settings:
+      ConnectionString: "${AZURE_STORAGE_CONNECTION}"
+      ContainerName: "uploads"
+      MaxFileSize: 52428800  # 50MB in bytes
+
+# Multi-line string example
+Documentation: |
+  This is a multi-line string that demonstrates
+  how VYaml.Configuration handles YAML's literal
+  block scalar format. This preserves line breaks
+  and formatting exactly as written.
+
+# Folded string example  
+Description: >
+  This is a folded string that demonstrates
+  how VYaml.Configuration handles YAML's folded
+  block scalar format. Line breaks are converted
+  to spaces, making it ideal for long descriptions.
+
+# Boolean values
+Debug: true
+Maintenance: false
+
+# Numeric values
+MaxRetries: 3
+Timeout: 30.5
+Port: 8080

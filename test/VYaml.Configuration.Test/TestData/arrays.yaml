@@ -1,0 +1,33 @@
+# Array and sequence testing
+servers:
+  - name: "server1"
+    host: "localhost"
+    port: 8081
+  - name: "server2"
+    host: "192.168.1.100"
+    port: 8082
+  - name: "server3"
+    host: "10.0.0.5"
+    port: 8083
+
+simpleArray:
+  - "item1"
+  - "item2"
+  - "item3"
+
+numbersArray:
+  - 1
+  - 2
+  - 3
+  - 42
+
+booleanArray:
+  - true
+  - false
+  - true
+
+mixedArray:
+  - "string"
+  - 123
+  - true
+  - null

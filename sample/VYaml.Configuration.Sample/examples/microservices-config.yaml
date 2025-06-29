@@ -1,0 +1,290 @@
+# Microservices Configuration Example
+# Real-world example showing how to configure a microservices architecture
+
+# Global settings applied to all services
+Global:
+  Environment: production
+  Region: us-east-1
+  Monitoring:
+    Enabled: true
+    Provider: Prometheus
+    Endpoints:
+      Metrics: /metrics
+      Health: /health
+      Ready: /ready
+
+# Service discovery configuration
+ServiceDiscovery:
+  Provider: Consul
+  Address: consul.service.consul:8500
+  Datacenter: dc1
+  HealthCheck:
+    Interval: 10s
+    Timeout: 5s
+    DeregisterAfter: 30s
+
+# Individual microservice configurations
+Services:
+  # API Gateway
+  ApiGateway:
+    Name: api-gateway
+    Port: 8080
+    Replicas: 3
+    Resources:
+      CPU:
+        Request: 500m
+        Limit: 1000m
+      Memory:
+        Request: 512Mi
+        Limit: 1Gi
+    
+    RateLimiting:
+      Enabled: true
+      Rules:
+        - Path: /api/v1/*
+          Limit: 1000
+          Window: 1m
+        - Path: /api/v2/*
+          Limit: 2000
+          Window: 1m
+    
+    Routes:
+      - Path: /api/v1/users/*
+        Service: user-service
+        Methods: [GET, POST, PUT, DELETE]
+      - Path: /api/v1/orders/*
+        Service: order-service
+        Methods: [GET, POST]
+      - Path: /api/v1/products/*
+        Service: product-service
+        Methods: [GET]
+    
+    CORS:
+      AllowedOrigins:
+        - https://app.example.com
+        - https://admin.example.com
+      AllowedMethods: [GET, POST, PUT, DELETE, OPTIONS]
+      AllowedHeaders: [Content-Type, Authorization]
+      MaxAge: 86400
+
+  # User Service
+  UserService:
+    Name: user-service
+    Port: 8081
+    Replicas: 2
+    Database:
+      Type: PostgreSQL
+      Host: postgres.service.consul
+      Port: 5432
+      Database: users
+      Pool:
+        Min: 5
+        Max: 20
+        IdleTimeout: 300s
+    
+    Cache:
+      Provider: Redis
+      Endpoints:
+        - redis-1.service.consul:6379
+        - redis-2.service.consul:6379
+      TTL: 3600
+      KeyPrefix: "user:"
+    
+    Authentication:
+      JWT:
+        Secret: ${JWT_SECRET}
+        Issuer: https://auth.example.com
+        Audience: https://api.example.com
+        ExpirationMinutes: 60
+    
+    Features:
+      Registration: true
+      SocialLogin: true
+      TwoFactorAuth: true
+      PasswordReset: true
+
+  # Order Service
+  OrderService:
+    Name: order-service
+    Port: 8082
+    Replicas: 3
+    Database:
+      Type: MongoDB
+      ConnectionString: ${MONGO_CONNECTION_STRING}
+      Database: orders
+      Options:
+        MaxPoolSize: 100
+        MinPoolSize: 10
+        MaxIdleTime: 60s
+    
+    MessageQueue:
+      Provider: RabbitMQ
+      Host: rabbitmq.service.consul
+      Port: 5672
+      Exchanges:
+        - Name: orders
+          Type: topic
+          Durable: true
+      Queues:
+        - Name: order-created
+          Durable: true
+          AutoDelete: false
+        - Name: order-shipped
+          Durable: true
+          AutoDelete: false
+    
+    Workflow:
+      States:
+        - pending
+        - confirmed
+        - processing
+        - shipped
+        - delivered
+        - cancelled
+      
+      Transitions:
+        - From: pending
+          To: [confirmed, cancelled]
+        - From: confirmed
+          To: [processing, cancelled]
+        - From: processing
+          To: [shipped, cancelled]
+        - From: shipped
+          To: [delivered]
+
+  # Product Service
+  ProductService:
+    Name: product-service
+    Port: 8083
+    Replicas: 2
+    Database:
+      Type: PostgreSQL
+      Host: postgres.service.consul
+      Port: 5432
+      Database: products
+      ReadReplicas:
+        - host: postgres-read-1.service.consul
+          port: 5432
+        - host: postgres-read-2.service.consul
+          port: 5432
+    
+    Search:
+      Provider: Elasticsearch
+      Endpoints:
+        - http://elasticsearch-1.service.consul:9200
+        - http://elasticsearch-2.service.consul:9200
+      Index: products
+      Settings:
+        NumberOfShards: 3
+        NumberOfReplicas: 2
+    
+    CDN:
+      Enabled: true
+      Provider: CloudFront
+      Domain: cdn.example.com
+      CacheControl:
+        Images: "public, max-age=86400"
+        Thumbnails: "public, max-age=604800"
+
+  # Notification Service
+  NotificationService:
+    Name: notification-service
+    Port: 8084
+    Replicas: 2
+    
+    Channels:
+      Email:
+        Provider: SendGrid
+        ApiKey: ${SENDGRID_API_KEY}
+        FromEmail: noreply@example.com
+        Templates:
+          Welcome: sg-welcome-123
+          OrderConfirmation: sg-order-456
+          PasswordReset: sg-reset-789
+      
+      SMS:
+        Provider: Twilio
+        AccountSid: ${TWILIO_ACCOUNT_SID}
+        AuthToken: ${TWILIO_AUTH_TOKEN}
+        FromNumber: "+1234567890"
+      
+      Push:
+        Provider: FCM
+        ServerKey: ${FCM_SERVER_KEY}
+        Topics:
+          - orders
+          - promotions
+          - system
+    
+    RateLimits:
+      Email:
+        PerUser: 50
+        PerDay: 1000
+      SMS:
+        PerUser: 10
+        PerDay: 100
+      Push:
+        PerUser: 100
+        PerDay: 1000
+
+# Infrastructure settings
+Infrastructure:
+  LoadBalancer:
+    Type: ALB
+    HealthCheck:
+      Path: /health
+      Interval: 30s
+      Timeout: 10s
+      HealthyThreshold: 2
+      UnhealthyThreshold: 3
+  
+  AutoScaling:
+    Enabled: true
+    MinReplicas: 2
+    MaxReplicas: 10
+    Metrics:
+      - Type: CPU
+        Target: 70
+      - Type: Memory
+        Target: 80
+      - Type: RequestRate
+        Target: 1000
+  
+  Logging:
+    Level: info
+    Format: json
+    Outputs:
+      - Type: stdout
+      - Type: file
+        Path: /var/log/app.log
+        MaxSize: 100MB
+        MaxBackups: 7
+      - Type: elasticsearch
+        Endpoint: http://elasticsearch.service.consul:9200
+        Index: logs-${service}-${date}
+
+# Security settings
+Security:
+  TLS:
+    Enabled: true
+    MinVersion: "1.2"
+    Ciphers:
+      - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+      - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+  
+  Secrets:
+    Provider: HashiCorp Vault
+    Address: https://vault.service.consul:8200
+    AuthMethod: kubernetes
+    MountPath: secret/data
+    RefreshInterval: 3600
+  
+  NetworkPolicies:
+    DefaultAction: deny
+    Rules:
+      - From: api-gateway
+        To: [user-service, order-service, product-service]
+        Ports: [8081, 8082, 8083]
+      - From: order-service
+        To: notification-service
+        Ports: [8084]

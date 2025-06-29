@@ -1,0 +1,103 @@
+# Complex YAML with various data types and structures
+application:
+  name: "Complex Test Application"
+  version: "3.1.4"
+  description: |
+    This is a multi-line description
+    that spans several lines and preserves
+    the line breaks and formatting.
+  summary: >
+    This is a folded description
+    that will be converted to a single
+    line with spaces replacing line breaks.
+
+environment:
+  name: "production"
+  debug: false
+  features:
+    - "logging"
+    - "monitoring"
+    - "caching"
+    - "compression"
+
+services:
+  database:
+    provider: "postgresql"
+    connection:
+      host: "db.example.com"
+      port: 5432
+      database: "myapp"
+      ssl: true
+    pool:
+      min: 5
+      max: 100
+      idle: 300
+    
+  cache:
+    provider: "redis"
+    connection:
+      host: "cache.example.com"
+      port: 6379
+      database: 0
+    settings:
+      ttl: 3600
+      compression: true
+      
+  messaging:
+    provider: "rabbitmq"
+    connection:
+      host: "mq.example.com"
+      port: 5672
+      virtualHost: "/"
+    queues:
+      - name: "orders"
+        durable: true
+        autoDelete: false
+      - name: "notifications"
+        durable: false
+        autoDelete: true
+
+monitoring:
+  enabled: true
+  endpoints:
+    health: "/health"
+    metrics: "/metrics"
+    ready: "/ready"
+  prometheus:
+    enabled: true
+    path: "/prometheus"
+    port: 9090
+
+# Special values testing
+nullValue: null
+emptyString: ""
+zeroNumber: 0
+negativeNumber: -42
+floatNumber: 3.14159
+scientificNotation: 1.23e-4
+percentage: 85%
+
+# Date and time (as strings in YAML)
+createdAt: "2025-01-15T10:30:00Z"
+updatedAt: "2025-01-15T15:45:30.123Z"
+
+# Quoted strings
+quotedString: "This is a quoted string"
+singleQuoted: 'This is single quoted'
+
+# Special characters
+specialChars: "String with special chars: !@#$%^&*()[]{}|\\:;\"'<>?,./"
+
+# YAML references and anchors
+defaults: &defaults
+  timeout: 30
+  retries: 3
+  
+service1:
+  <<: *defaults
+  name: "Service One"
+  
+service2:
+  <<: *defaults
+  name: "Service Two"
+  timeout: 60  # Override default

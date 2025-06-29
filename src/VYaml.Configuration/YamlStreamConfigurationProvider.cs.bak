@@ -1,0 +1,35 @@
+// <copyright file="YamlStreamConfigurationProvider.cs" company="Mistial Developer">
+// Copyright (c) 2025 Mistial Developer. All rights reserved.
+// Licensed under the MIT License. See docs/LICENSE for details.
+// </copyright>
+
+using System.IO;
+
+using Microsoft.Extensions.Configuration;
+
+namespace VYaml.Configuration
+{
+    /// <summary>
+    /// Provides configuration key-value pairs that are obtained from a YAML stream.
+    /// </summary>
+    public class YamlStreamConfigurationProvider : StreamConfigurationProvider
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="YamlStreamConfigurationProvider"/> class.
+        /// </summary>
+        /// <param name="source">The <see cref="YamlStreamConfigurationSource"/>.</param>
+        public YamlStreamConfigurationProvider(YamlStreamConfigurationSource source)
+            : base(source)
+        {
+        }
+
+        /// <summary>
+        /// Loads YAML configuration key-value pairs from a stream into a provider.
+        /// </summary>
+        /// <param name="stream">The YAML <see cref="Stream"/> to load configuration data from.</param>
+        public override void Load(Stream stream)
+        {
+            this.Data = YamlConfigurationFileParser.Parse(stream);
+        }
+    }
+}

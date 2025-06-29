@@ -1,0 +1,20 @@
+# Nested YAML configuration for testing
+application:
+  name: "Nested Test App"
+  version: "2.0.0"
+  
+database:
+  connectionString: "Server=localhost;Database=test"
+  settings:
+    maxConnections: 100
+    timeout: 30
+    enableRetry: true
+    
+api:
+  baseUrl: "https://api.test.com"
+  endpoints:
+    users: "/api/users"
+    orders: "/api/orders"
+  security:
+    enableAuth: true
+    tokenExpiry: 3600

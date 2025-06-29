@@ -1,0 +1,22 @@
+default:
+  host: default.host
+  port: 1234
+
+development:
+  host: default.host
+  port: 1234
+  database: dev_db
+  description: |
+    This is a multi-line
+    description with YAML
+    block scalar.
+
+production:
+  host: default.host
+  port: 1234
+  database: prod_db
+  description: >
+    Production description
+    with folded newlines
+    and special characters: !@#$%^&*()
+

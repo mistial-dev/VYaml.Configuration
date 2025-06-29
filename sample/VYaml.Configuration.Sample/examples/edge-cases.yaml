@@ -1,0 +1,195 @@
+# Edge Cases and Special Scenarios
+# This file demonstrates handling of edge cases and special YAML scenarios
+
+# Empty values
+EmptyValues:
+  EmptyString: ""
+  EmptyStringAlt: ''
+  NullValue: null
+  NullAlt: ~
+  MissingValue:
+  EmptyObject: {}
+  EmptyArray: []
+
+# Special characters in keys
+"Key with spaces": value1
+"Key:with:colons": value2
+"Key.with.dots": value3
+"Key-with-dashes": value4
+"Key_with_underscores": value5
+"Key/with/slashes": value6
+"Key@with@special#chars!": value7
+"123NumericKey": value8
+"": empty key name
+
+# Special characters in values
+SpecialValues:
+  Colon: "value:with:colons"
+  Dash: "value-with-dashes"
+  Quote: 'value with "quotes"'
+  SingleQuote: "value with 'single quotes'"
+  Newline: "value\nwith\nnewlines"
+  Tab: "value\twith\ttabs"
+  Backslash: "value\\with\\backslashes"
+  Unicode: "值带有Unicode字符 🎉"
+  HTML: "<div class='test'>HTML content</div>"
+  JSON: '{"nested": "json", "array": [1,2,3]}'
+  URL: "https://example.com/path?query=value&foo=bar"
+  EmailPattern: "user+tag@example.com"
+  
+# Reserved words and keywords
+ReservedWords:
+  true: "not a boolean"
+  false: "also not a boolean"
+  null: "not null"
+  yes: "just a string"
+  no: "another string"
+  on: "string value"
+  off: "string value"
+
+# Numbers that might be confused with strings
+AmbiguousNumbers:
+  ZeroPrefixed: "0123"
+  PhoneNumber: "555-1234"
+  ZipCode: "12345"
+  Version: "1.2.3"
+  IPAddress: "192.168.1.1"
+  MACAddress: "00:11:22:33:44:55"
+  CreditCard: "1234-5678-9012-3456"
+
+# Very long values
+LongValues:
+  LongString: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+  
+  VeryLongKey_ThatExceedsNormalLengthExpectations_AndKeepsGoing_AndGoing_AndGoing_AndGoing: "value"
+  
+  LongNumber: 123456789012345678901234567890123456789012345678901234567890
+  
+  LongArray: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50]
+
+# Deeply nested structure
+Deep:
+  Level1:
+    Level2:
+      Level3:
+        Level4:
+          Level5:
+            Level6:
+              Level7:
+                Level8:
+                  Level9:
+                    Level10: "Very deep value"
+
+# Circular reference attempt (will be resolved by YAML parser)
+CircularRef: &circular
+  Name: "Parent"
+  Child:
+    Name: "Child"
+    Parent: *circular
+
+# Case sensitivity
+CaseSensitive:
+  key: "lowercase"
+  Key: "titlecase"
+  KEY: "uppercase"
+  kEy: "mixed case"
+
+# Whitespace handling
+Whitespace:
+  TrailingSpace: "value   "
+  LeadingSpace: "   value"
+  MiddleSpace: "val   ue"
+  TabCharacter: "value	with	tabs"
+  
+  PreservedWhitespace: |
+    Line with trailing spaces   
+    Line with		tabs
+       Line with leading spaces
+    
+    Line after empty line
+  
+  CollapsedWhitespace: >
+    Multiple     spaces     between     words
+    will be collapsed to single spaces
+    when using folded scalars.
+
+# Comments in tricky places
+CommentTests:
+  Key1: "value" # Comment after value
+  Key2: "value # not a comment"
+  Key3: 'value # also not a comment'
+  Key4: | # Comment after pipe
+    This is the actual value
+    # This is part of the value, not a comment
+  Key5: "value with escaped quote \" and # not comment"
+
+# Duplicate keys (last one wins in most parsers)
+DuplicateKeys:
+  Key: "First value"
+  Key: "Second value"
+  Key: "Third value - this one wins"
+
+# Mixed indentation (should use spaces only)
+MixedIndent:
+  SpaceIndented:
+    Key1: value1
+    Key2: value2
+  # Note: Tabs should not be used for indentation in YAML
+
+# Special number formats
+NumberFormats:
+  Binary: 0b1010
+  Octal: 0o755
+  Hex: 0xDEADBEEF
+  Underscore: 1_000_000
+  Scientific: 1.23e-4
+  PositiveInfinity: .inf
+  NegativeInfinity: -.inf
+  NotANumber: .nan
+
+# Date/Time edge cases
+DateTimeEdgeCases:
+  DateOnly: 2025-01-29
+  TimeOnly: 15:30:45
+  DateTimeNoTZ: 2025-01-29T15:30:45
+  DateTimeWithTZ: 2025-01-29T15:30:45Z
+  DateTimeOffset: 2025-01-29T15:30:45-05:00
+  InvalidDate: "2025-13-45"  # String, not parsed as date
+  
+# Boolean edge cases
+BooleanEdgeCases:
+  Lowercase: [true, false]
+  Uppercase: [TRUE, FALSE]
+  TitleCase: [True, False]
+  YesNo: [yes, no]
+  OnOff: [on, off]
+  YN: [y, n]
+  # These are strings, not booleans
+  Strings: ["true", "false", "yes", "no"]
+
+# Null edge cases
+NullCases:
+  Explicit: null
+  Tilde: ~
+  Empty:
+  CaseVariants: [NULL, Null]
+  # These are strings, not nulls
+  StringNulls: ["null", "~", "NULL"]
+
+# Array edge cases
+ArrayEdgeCases:
+  EmptyArray: []
+  SingleElement: [42]
+  MixedTypes: [1, "two", 3.0, true, null]
+  NestedEmpty: [[], [], []]
+  ArrayOfArrays: [[1,2], [3,4], [5,6]]
+  InlineNested: [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+
+# Security-related test cases (safe examples)
+SecurityTests:
+  SQLInjection: "'; DROP TABLE users; --"
+  ScriptInjection: "<script>alert('test')</script>"
+  PathTraversal: "../../../etc/passwd"
+  XXE: "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]>"
+  CommandInjection: "test; rm -rf /"
+  # All of these should be treated as plain strings

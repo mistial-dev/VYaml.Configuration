@@ -1,0 +1,5 @@
+# Simple YAML configuration for testing
+appName: "Simple Test App"
+version: "1.0.0"
+debug: true
+port: 8080
